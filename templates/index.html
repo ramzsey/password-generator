@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <h1>Password Generator</h1>
+            
+            <div class="password-group">
+                <div class="password-item">
+                    <div class="password-label">20 characters</div>
+                    <div class="password-display">
+                        <code class="password-text">{{.Short}}</code>
+                        <button class="copy-btn" onclick="copyToClipboard('{{.Short}}', this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="password-item">
+                    <div class="password-label">30 characters</div>
+                    <div class="password-display">
+                        <code class="password-text">{{.Medium}}</code>
+                        <button class="copy-btn" onclick="copyToClipboard('{{.Medium}}', this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="password-item">
+                    <div class="password-label">40 characters</div>
+                    <div class="password-display">
+                        <code class="password-text">{{.Long}}</code>
+                        <button class="copy-btn" onclick="copyToClipboard('{{.Long}}', this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="password-item dynamic-item">
+                    <center>
+                    <div class="password-label-dynamic">
+                        <span>Custom length</span>
+                        <span id="length-value" class="length-display">20</span>
+                    </div>
+                    <input type="range" 
+                           id="length-slider" 
+                           class="length-slider" 
+                           min="8" 
+                           max="50" 
+                           value="20"
+                           hx-get="/generate"
+                           hx-trigger="input"
+                           hx-target="#dynamic-password"
+                           hx-include="[id='length-slider']"
+                           hx-vals='js:{length: document.getElementById("length-slider").value}'
+                           oninput="document.getElementById('length-value').textContent = this.value">
+                        </center>
+                    <div class="password-display">
+                        <div id="dynamic-password">
+                            <code class="password-text">Loading...</code>
+                        </div>
+                        <button class="copy-btn" id="dynamic-copy-btn" onclick="copyDynamicPassword(this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="refresh-btn" onclick="window.location.reload()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Generate
+            </button>
+        </div>
+    </main>
+
+    <script>
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copyDynamicPassword(button) {
+            const passwordText = document.querySelector('#dynamic-password .password-text').textContent;
+            navigator.clipboard.writeText(passwordText).then(() => {
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        window.addEventListener('load', function() {
+            htmx.trigger('#length-slider', 'input');
+        });
+    </script>
+</body>
+</html>
