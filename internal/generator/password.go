@@ -2,10 +2,18 @@ package generator
 
 import (
 	"crypto/rand"
-	"math/big"
+	"encoding/binary"
 )
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$+<?"
+var charset = func() string {
+	chars := make([]byte, 94)
+	for i := range chars {
+		chars[i] = byte(i + 33)
+	}
+	return string(chars)
+}()
+
+const randomNumberRange = uint64(1) << 32
 
 type Password struct {
 	Short  string
@@ -37,15 +45,22 @@ func Generate() (*Password, error) {
 }
 
 func generatePassword(length int) (string, error) {
-	password := make([]byte, length)
-	charsetLen := big.NewInt(int64(len(charset)))
+	charsetLen := len(charset)
+	unbiasedLimit := uint32(randomNumberRange - (randomNumberRange % uint64(charsetLen)))
+	password := make([]byte, 0, length)
+	randomValues := make([]byte, 4*length)
 
-	for i := 0; i < length; i++ {
-		num, err := rand.Int(rand.Reader, charsetLen)
-		if err != nil {
+	for len(password) < length {
+		if _, err := rand.Read(randomValues); err != nil {
 			return "", err
 		}
-		password[i] = charset[num.Int64()]
+
+		for i := 0; i < length && len(password) < length; i++ {
+			value := binary.LittleEndian.Uint32(randomValues[i*4 : (i+1)*4])
+			if value < unbiasedLimit {
+				password = append(password, charset[value%uint32(charsetLen)])
+			}
+		}
 	}
 
 	return string(password), nil
