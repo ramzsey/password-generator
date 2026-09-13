@@ -50,6 +50,19 @@
                     </div>
                 </div>
 
+                <div class="password-item">
+                    <div class="password-label">100 characters</div>
+                    <div class="password-display">
+                        <code class="password-text" id="password-100"></code>
+                        <button class="copy-btn" onclick="copyToClipboard('password-100', this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="password-item dynamic-item">
                     <div class="password-label-dynamic">
                         <span>Custom length</span>
@@ -59,7 +72,7 @@
                            id="length-slider" 
                            class="length-slider" 
                            min="8" 
-                           max="50" 
+                           max="128" 
                            value="20"
                            oninput="updateDynamicPassword()">
                     <div class="password-display">
@@ -86,16 +99,37 @@
     </main>
 
     <script>
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$+<?";
+        const charset = Array.from(
+            { length: 94 },
+            (_, index) => String.fromCharCode(index + 33)
+        ).join('');
+        const generatedPasswords = new Set();
 
         function generatePassword(length) {
-            const array = new Uint8Array(length);
-            crypto.getRandomValues(array);
-            
-            let password = '';
-            for (let i = 0; i < length; i++) {
-                password += charset[array[i] % charset.length];
-            }
+            const randomNumberRange = 0x100000000;
+            const unbiasedLimit = randomNumberRange - (randomNumberRange % charset.length);
+            const randomValues = new Uint32Array(length);
+            let password;
+
+            do {
+                password = '';
+
+                while (password.length < length) {
+                    crypto.getRandomValues(randomValues);
+
+                    for (const value of randomValues) {
+                        if (value < unbiasedLimit) {
+                            password += charset[value % charset.length];
+                        }
+
+                        if (password.length === length) {
+                            break;
+                        }
+                    }
+                }
+            } while (generatedPasswords.has(password));
+
+            generatedPasswords.add(password);
             return password;
         }
 
@@ -103,6 +137,7 @@
             document.getElementById('password-20').textContent = generatePassword(20);
             document.getElementById('password-30').textContent = generatePassword(30);
             document.getElementById('password-40').textContent = generatePassword(40);
+            document.getElementById('password-100').textContent = generatePassword(100);
             updateDynamicPassword();
         }
 
