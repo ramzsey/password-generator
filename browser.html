@@ -51,6 +51,19 @@
                 </div>
 
                 <div class="password-item">
+                    <div class="password-label">40 characters (letters &amp; numbers)</div>
+                    <div class="password-display">
+                        <code class="password-text" id="password-40-alnum"></code>
+                        <button class="copy-btn" onclick="copyToClipboard('password-40-alnum', this)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="password-item">
                     <div class="password-label">100 characters</div>
                     <div class="password-display">
                         <code class="password-text" id="password-100"></code>
@@ -103,11 +116,13 @@
             { length: 94 },
             (_, index) => String.fromCharCode(index + 33)
         ).join('');
+        const alphanumericCharset =
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         const generatedPasswords = new Set();
 
-        function generatePassword(length) {
+        function generatePassword(length, chars = charset) {
             const randomNumberRange = 0x100000000;
-            const unbiasedLimit = randomNumberRange - (randomNumberRange % charset.length);
+            const unbiasedLimit = randomNumberRange - (randomNumberRange % chars.length);
             const randomValues = new Uint32Array(length);
             let password;
 
@@ -119,7 +134,7 @@
 
                     for (const value of randomValues) {
                         if (value < unbiasedLimit) {
-                            password += charset[value % charset.length];
+                            password += chars[value % chars.length];
                         }
 
                         if (password.length === length) {
@@ -137,6 +152,8 @@
             document.getElementById('password-20').textContent = generatePassword(20);
             document.getElementById('password-30').textContent = generatePassword(30);
             document.getElementById('password-40').textContent = generatePassword(40);
+            document.getElementById('password-40-alnum').textContent =
+                generatePassword(40, alphanumericCharset);
             document.getElementById('password-100').textContent = generatePassword(100);
             updateDynamicPassword();
         }
