@@ -8,6 +8,6 @@ A minimal password generator built with Go and HTMX.
 
 #### Two options:
 1. There's the Golang version where you can run it locally, deploy to Render, Vercel or do anything you want. I initially started with that unitill I got curious.
-2. And one static html file (browser.html) which has everything needed. The browser does the generation part. Try it right here [https://password-generator.ramseythecoder.workers.dev/](https://password-generator.ramseythecoder.workers.dev/)
+2. And one static html file (index.html) which has everything needed. The browser does the generation part. Try it right here [https://password-generator.ramseythecoder.workers.dev/](https://password-generator.ramseythecoder.workers.dev/)
 
 #### The UI is AI generated, as you can see! I am horrible at design and colors.
